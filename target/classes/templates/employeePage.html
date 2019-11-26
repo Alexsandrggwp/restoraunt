@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div th:each="table : ${allTables}">
+    <b th:text="${table.id}"></b>
+    <span th:if="${table.getClientId()!=0}">занят</span>
+    <span th:if="${table.getClientId()==0}">свободен</span>
+    <div th:each="order : ${table.getOrders()}">
+        <form method="post" th:action="@{/completeOrder}">
+            <div>
+                <span th:text="${order.getClient().name}"></span >
+                <span th:text="${order.getClient().surname}"></span >
+            </div>
+            <div th:each="dish : ${order.getDishes()}">
+                <span th:text="${dish.name}"></span >
+                <span th:text="${dish.cost} + 'руб'"></span >
+            </div>
+            <input type="hidden" name="orderId" th:value="${order.id}">
+            <input type="hidden" name="tableId" th:value="${table.id}">
+            <input type="submit" name="submit" value="Завершить заказ"/>
+        </form>
+
+        <div th:if="${order.waiter.name != null}">
+            <span th:text="'Обслуживается: ' + ${order.waiter.name} + ' ' + ${order.waiter.surname}"></span >
+        </div>
+
+        <form th:if="${order.waiter != null}" method="post" th:action="@{/assignWaiter}">
+            <select th:value="${waitersList}" name="waiterId">
+                <option th:value="${null}">выберете официанта</option>
+                <option th:each="waiter : ${waitersList}" th:value="${waiter.id}" th:text="${waiter.name} + ' ' + ${waiter.surname}"></option>
+            </select>
+            <input type="hidden" name="orderId" th:value="${order.id}">
+            <input type="submit" name="submit" value="назначить"/>
+        </form>
+    </div>
+</div>
+
+<b>Все заказанные блюда</b>
+<div th:each="dish : ${allOrderedDishes}">
+    <span th:text="${dish.name}"></span>
+    <span th:text="${dish.cost} + 'руб'"></span>
+</div>
+</body>
+</html>

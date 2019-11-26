@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div>
+    <form method="post" th:action="@{/order}">
+        <select th:value="${dishesList}" name="dishId">
+            <option th:value="0">выберите блюдо</option>
+            <option th:each="dish : ${dishesList}" th:value="${dish.id}" th:text="${dish.name} + ' ' + ${dish.cost}"></option>
+        </select>
+        <select th:value="${allTables}" name="tableId">
+            <option th:value="0">выберете столик</option>
+            <option th:each="table : ${allTables}" th:value="${table.id}" th:text="${table.id}"></option>
+        </select>
+        <select th:if="${userOrders.size()!=0}" th:value="${userOrders}" name="orderId">
+            <option th:value="0">новый заказ</option>
+            <option th:each="order : ${userOrders}" th:value="${order.id}" th:text="${order.id}"></option>
+        </select>
+        <input type="hidden" th:if="${userOrders.size()==0}" name="orderId" th:value="${0}">
+        <input type="submit" name="submit" value="заказать"/>
+        <div th:if="${error != null}" th:text="${error}"></div>
+    </form>
+</div>
+
+<div th:if="${userOrders.size()!=0}">
+    <div th:each="order : ${userOrders}">
+        <form method="post" th:action="@{/deleteOrder}">
+            <b th:text="${order.id}"></b>
+            <input type="hidden" name="orderId" th:value="${order.id}">
+            <input type="submit" name="submit" value="убрать заказ"/>
+        </form>
+        <div th:each="dish : ${order.getDishes()}">
+            <form method="post" th:action="@{/deleteDish}">
+                <input type="hidden" name="dishId" th:value="${dish.id}">
+                <input type="hidden" name="orderId" th:value="${order.id}">
+                <span th:text="${dish.name}"></span>
+                <span th:text="${dish.cost} + 'руб'"></span>
+                <input type="submit" name="submit" value="убрать из заказа"/>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:if="${userOrders.size()==0}">
+    <span>Вы ещё ничего не заказли</span>
+</div>
+
+<div th:each="table : ${allTables}">
+    <div>
+        <b th:text="${table.id}"></b>
+        <span th:if="${table.getClientId()!=0}">занят</span>
+        <span th:if="${table.getClientId()==0}">свободен</span>
+    </div>
+</div>
+</body>
+</html>
