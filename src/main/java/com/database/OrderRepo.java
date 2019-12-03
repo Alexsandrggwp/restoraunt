@@ -1,9 +1,9 @@
-package database;
+package com.database;
 
 import com.mysql.fabric.jdbc.FabricMySQLDriver;
-import entities.Dish;
-import entities.Order;
-import entities.User;
+import com.entities.Dish;
+import com.entities.Order;
+import com.entities.User;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -23,38 +23,9 @@ public class OrderRepo extends BaseRepo{
         }
     }
 
-    /*public List<Order> getAllOrders(){
-        String getAllOrders = "select * from orders";
-        List<Order> allOrdersList = new ArrayList<>();
-
-        try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             Statement statement = connection.createStatement()) {
-
-            ResultSet orderResultSet = statement.executeQuery(getAllOrders);
-
-            while (orderResultSet.next()){
-                Order order = new Order();
-                order.setId(orderResultSet.getInt("order_id"));
-                order.setOrderAmount(orderResultSet.getInt("order_value"));
-                order.setTableId(orderResultSet.getInt("table_id"));
-                order.setClientId(orderResultSet.getInt("client_id"));
-                order.setWaiterId(orderResultSet.getInt("waiter_id"));
-                allOrdersList.add(order);
-            }
-
-            connection.close();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return allOrdersList;
-    }*/
-
     public void reserveOrder(int orderId, int tableId, int clientId){
-        String addOrder = "insert into orders (order_id, table_id, client_id) values (?, ?, ?)";
-
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(addOrder)) {
+             CallableStatement statement = connection.prepareCall("{CALL reserveOrder(?,?,?)}")) {
 
             statement.setInt(1, orderId);
             statement.setInt(2, tableId);
@@ -70,10 +41,9 @@ public class OrderRepo extends BaseRepo{
     }
 
     public List<Order> getUsersOrders(int userId){
-        String getUsersOrders = "select * from orders where client_id = ?";
         List<Order> result = new ArrayList<>();
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(getUsersOrders)) {
+             CallableStatement statement = connection.prepareCall("{CALL getUsersOrders(?)}")) {
 
             statement.setInt(1, userId);
 
@@ -103,11 +73,10 @@ public class OrderRepo extends BaseRepo{
     }
 
     private void fillUpOrders(List<Order> orders) {
-        String getOrderDishes = "select dish_id, repeats from dish_order where order_id = ?";
         List<Dish> dishes = dishRepo.getAllDishes();
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN)){
             for (Order order : orders) {
-                PreparedStatement statement = connection.prepareStatement(getOrderDishes);
+                CallableStatement statement = connection.prepareCall("{CALL fillUpOrders(?)}");
                 statement.setInt(1, order.getId());
 
                 ResultSet resultSet = statement.executeQuery();
@@ -129,9 +98,8 @@ public class OrderRepo extends BaseRepo{
     }
 
     public boolean isOrderPresent(int orderId){
-        String isOrderPresent = "select * from orders where order_id = ?";
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(isOrderPresent)) {
+             CallableStatement statement = connection.prepareCall("{CALL isOrderPresent(?)}")) {
 
             statement.setInt(1, orderId);
 
@@ -146,9 +114,8 @@ public class OrderRepo extends BaseRepo{
     }
 
     public int getOrderTableId(int orderId){
-        String getOrderTableId = "select table_id from orders where order_id = ?";
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(getOrderTableId)) {
+             CallableStatement statement = connection.prepareCall("{CALL getOrderTableId(?)}")) {
 
             statement.setInt(1, orderId);
 
@@ -163,10 +130,8 @@ public class OrderRepo extends BaseRepo{
     }
 
     public void deleteOrder(int orderId){
-        String deleteOrder = "delete from orders where order_id = ?";
-
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(deleteOrder)) {
+             CallableStatement statement = connection.prepareCall("{CALL deleteOrder(?)}")) {
 
             statement.setInt(1, orderId);
 
@@ -178,12 +143,10 @@ public class OrderRepo extends BaseRepo{
     }
 
     public List<Order> getAllTableOrders(int tableId){
-        String getAllTableOrders = "select * from orders where table_id = ?";
-
         List<Order> result = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(getAllTableOrders)) {
+             CallableStatement statement = connection.prepareCall("{CALL getAllTableOrders(?)}")) {
 
             statement.setInt(1, tableId);
 

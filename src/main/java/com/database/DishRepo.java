@@ -1,7 +1,7 @@
-package database;
+package com.database;
 
 import com.mysql.fabric.jdbc.FabricMySQLDriver;
-import entities.Dish;
+import com.entities.Dish;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -21,13 +21,12 @@ public class DishRepo extends BaseRepo{
 
 
     public List<Dish> getAllDishes(){
-        String getAllDishes = "select * from dishes";
         List<Dish> dishes = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             Statement statement = connection.createStatement()) {
+             CallableStatement statement = connection.prepareCall("{CALL getAllDishes()}")) {
 
-            ResultSet orderResultSet = statement.executeQuery(getAllDishes);
+            ResultSet orderResultSet = statement.executeQuery();
             while (orderResultSet.next()){
                 Dish dish = new Dish();
                 dish.setId(orderResultSet.getInt("dish_id"));

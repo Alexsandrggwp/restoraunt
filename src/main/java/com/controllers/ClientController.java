@@ -1,12 +1,12 @@
-package main;
+package com.controllers;
 
-import database.DishOrderRepo;
-import database.DishRepo;
-import database.OrderRepo;
-import database.TableRepo;
-import entities.Dish;
-import entities.Order;
-import entities.Table;
+import com.database.DishOrderRepo;
+import com.database.DishRepo;
+import com.database.OrderRepo;
+import com.database.TableRepo;
+import com.entities.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,8 +26,16 @@ public class ClientController {
 
     private String error;
 
+    @GetMapping("/")
+    public String redir(){
+        return "redirect:/client";
+    }
+
     @GetMapping("/client")
-    public String getTables(Model model){
+    public String getTables(@AuthenticationPrincipal User user, Model model){
+        if(user.getRole().equals(Role.chef) || user.getRole().equals(Role.cooker) || user.getRole().equals(Role.waiter)) {
+            return "redirect:/employee";
+        }
         List<Table> tables = tableRepo.getAllTables();
         List<Dish> dishes = dishRepo.getAllDishes();
         List<Order> orders = orderRepo.getUsersOrders(1);

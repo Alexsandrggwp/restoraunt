@@ -1,7 +1,7 @@
-package database;
+package com.database;
 
 import com.mysql.fabric.jdbc.FabricMySQLDriver;
-import entities.Dish;
+import com.entities.Dish;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -22,10 +22,8 @@ public class DishOrderRepo extends BaseRepo{
     }
 
     public void addDishToOrder(int orderId, int dishId){
-        String addDishesToOrder = "insert into dish_order (order_id, dish_id, repeats) value (?,?,1) ";
-
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(addDishesToOrder)) {
+             CallableStatement statement = connection.prepareCall("{CALL addDishToOrder(?, ?)}")) {
 
             statement.setInt(1, orderId);
             statement.setInt(2, dishId);
@@ -40,9 +38,8 @@ public class DishOrderRepo extends BaseRepo{
     }
 
     public void increaseRepeats(int orderId, int dishId){
-        String increase = "update dish_order set repeats = repeats + 1 where order_id = ? and dish_id = ?";
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(increase)) {
+             CallableStatement statement = connection.prepareCall("{CALL increaseRepeats(?, ?)}")) {
 
             statement.setInt(1, orderId);
             statement.setInt(2, dishId);
@@ -57,9 +54,8 @@ public class DishOrderRepo extends BaseRepo{
     }
 
     public void decreaseRepeats(int orderId, int dishId){
-        String increase = "update dish_order set repeats = repeats - 1 where order_id = ? and dish_id = ?";
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(increase)) {
+             CallableStatement statement = connection.prepareCall("{CALL decreaseRepeats(?, ?)}")) {
 
             statement.setInt(1, orderId);
             statement.setInt(2, dishId);
@@ -74,9 +70,8 @@ public class DishOrderRepo extends BaseRepo{
     }
 
     public boolean isDishPresent(int orderId, int dishId){
-        String increase = "select * from dish_order where order_id = ? and dish_id = ?";
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(increase)) {
+             CallableStatement statement = connection.prepareCall("{CALL isDishPresent(?, ?)}")) {
 
             statement.setInt(1, orderId);
             statement.setInt(2, dishId);
@@ -92,10 +87,8 @@ public class DishOrderRepo extends BaseRepo{
     }
 
     public int getRepeats(int orderId, int dishId){
-        String getRepeats = "select repeats from dish_order where order_id = ? and dish_id = ?";
-
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(getRepeats)) {
+             CallableStatement statement = connection.prepareCall("{CALL getRepeats(?, ?)}")) {
 
             statement.setInt(1, orderId);
             statement.setInt(2, dishId);
@@ -112,10 +105,8 @@ public class DishOrderRepo extends BaseRepo{
     }
 
     public int getSumOfOrderDishes(int orderId){
-        String getSum = "select sum(repeats) as sum from dish_order where order_id = ?";
-
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(getSum)) {
+             CallableStatement statement = connection.prepareCall("{CALL getSum(?)}")) {
 
             statement.setInt(1, orderId);
 
@@ -130,10 +121,8 @@ public class DishOrderRepo extends BaseRepo{
     }
 
     public void deleteDishFromOrder(int orderId, int dishId){
-        String delete = "delete from dish_order where order_id = ? and dish_id = ?";
-
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(delete)) {
+             CallableStatement statement = connection.prepareCall("{CALL deleteDishFromOrder(?, ?)}")) {
 
             statement.setInt(1, orderId);
             statement.setInt(2, dishId);
@@ -146,10 +135,8 @@ public class DishOrderRepo extends BaseRepo{
     }
 
     public void deleteAllDishesFromOrder(int orderId){
-        String delete = "delete from dish_order where order_id = ?";
-
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(delete)) {
+             CallableStatement statement = connection.prepareCall("{CALL deleteAllDishesFromOrder(?)}")) {
 
             statement.setInt(1, orderId);
 
@@ -161,11 +148,10 @@ public class DishOrderRepo extends BaseRepo{
     }
 
     public List<Dish> getAllOrderedDishes(){
-        String getAllOrderedOrders = "select dish_id, repeats from dish_order";
         List<Dish> result = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(getAllOrderedOrders)) {
+             CallableStatement statement = connection.prepareCall("{CALL getAllOrderedDishes()}")) {
 
             List<Dish> dishes = dishRepo.getAllDishes();
 
@@ -186,14 +172,11 @@ public class DishOrderRepo extends BaseRepo{
         return result;
     }
 
-
     public List<Dish> getDishesOfOrder(int orderId){
-        String getDishesOfOrder = "select d.dish_id, dish_name, dish_cost from dishes d" +
-                " inner join dish_order o on d.dish_id = o.dish_id where order_id = ?";
         List<Dish> result = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(getDishesOfOrder)) {
+             CallableStatement statement = connection.prepareCall("{CALL getDishesOfOrder(?)}")) {
 
             statement.setInt(1, orderId);
 

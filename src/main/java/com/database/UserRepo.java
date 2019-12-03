@@ -1,8 +1,8 @@
-package database;
+package com.database;
 
+import com.entities.Role;
 import com.mysql.fabric.jdbc.FabricMySQLDriver;
-import entities.Dish;
-import entities.User;
+import com.entities.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,9 +25,8 @@ public class UserRepo extends BaseRepo implements UserDetailsService{
 
 
     public void addUser(String name, String surname, String login, String password, int role){
-        String addUser = "insert into users values(?, ?, ?, ?, ?)";
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(addUser)) {
+             CallableStatement statement = connection.prepareCall("{CALL addUser(?,?,?,?,?)}")) {
 
             statement.setString(1, name);
             statement.setString(2, surname);
@@ -44,11 +43,10 @@ public class UserRepo extends BaseRepo implements UserDetailsService{
         }
     }
 
-    public void addWaiterToOrder(int orderId, int waiterId){
-        String addWaiterToTable = "update orders set waiter_id = ? where order_id = ?";
+    public void addWaiterToOrder(int waiterId, int orderId){
 
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(addWaiterToTable)) {
+             CallableStatement statement = connection.prepareCall("{CALL addWaiterToOrder(?,?)}")) {
 
             statement.setInt(1, waiterId);
             statement.setInt(2, orderId);
@@ -63,12 +61,10 @@ public class UserRepo extends BaseRepo implements UserDetailsService{
     }
 
     public User getWaiterOfOrder(int orderId){
-        String getWaiterOfOrder = "select user_name, user_surname from users inner join orders" +
-                " on user_id = waiter_id where order_id = ?";
         User user = new User();
 
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(getWaiterOfOrder)) {
+             CallableStatement statement = connection.prepareCall("{CALL getWaiterOfOrder(?)}")) {
 
             statement.setInt(1, orderId);
 
@@ -86,12 +82,10 @@ public class UserRepo extends BaseRepo implements UserDetailsService{
     }
 
     public User getClientOfOrder(int orderId){
-        String getClientOfOrder = "select user_name, user_surname from users inner join orders" +
-                " on user_id = client_id where order_id = ?";
         User user = new User();
 
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(getClientOfOrder)) {
+             CallableStatement statement = connection.prepareCall("{CALL getClientOfOrder(?)}")) {
 
             statement.setInt(1, orderId);
 
@@ -109,11 +103,10 @@ public class UserRepo extends BaseRepo implements UserDetailsService{
     }
 
     public List<User> getAllWaiters(){
-        String getAllWaiters = "select * from users where user_role = 2";
         List<User> result = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(getAllWaiters)) {
+             CallableStatement statement = connection.prepareCall("{CALL getAllWaiters()}")) {
 
             ResultSet resultSet = statement.executeQuery();
 
@@ -122,7 +115,7 @@ public class UserRepo extends BaseRepo implements UserDetailsService{
                 waiter.setId(resultSet.getInt("user_id"));
                 waiter.setName(resultSet.getString("user_name"));
                 waiter.setSurname(resultSet.getString("user_surname"));
-                waiter.setRoleId(2);
+                waiter.setRole(Role.valueOf("waiter"));
                 result.add(waiter);
             }
 
@@ -137,8 +130,28 @@ public class UserRepo extends BaseRepo implements UserDetailsService{
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
         User user = new User();
-        user.setLogin("u");
-        user.setPassword("u");
+
+        try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
+             CallableStatement statement = connection.prepareCall("{CALL loadUserByUsername(?)}")) {
+
+            statement.setString(1, s);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()){
+                user.setId(resultSet.getInt("user_id"));
+                user.setName(resultSet.getString("user_name"));
+                user.setSurname(resultSet.getString("user_surname"));
+                user.setLogin(resultSet.getString("user_login"));
+                user.setPassword(resultSet.getString("user_password"));
+                user.setRole(Role.valueOf(resultSet.getString("role_name")));
+            }
+
+            connection.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return user;
     }
 }

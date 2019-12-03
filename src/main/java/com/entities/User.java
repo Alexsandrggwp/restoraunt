@@ -1,9 +1,10 @@
-package entities;
+package com.entities;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 
 public class User implements UserDetails{
 
@@ -13,7 +14,7 @@ public class User implements UserDetails{
     private String login;
     private String password;
 
-    private int roleId;
+    private Role role;
 
     public int getId() {
         return id;
@@ -51,18 +52,17 @@ public class User implements UserDetails{
         this.password = password;
     }
 
-    public int getRoleId() {
-        return roleId;
+    public Role getRole() {
+        return role;
     }
 
-    public void setRoleId(int roleId) {
-        this.roleId = roleId;
+    public void setRole(Role role) {
+        this.role = role;
     }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return Collections.singletonList(role);
     }
 
     @Override
@@ -77,21 +77,21 @@ public class User implements UserDetails{
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return true;
     }
 }

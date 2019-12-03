@@ -1,7 +1,7 @@
-package database;
+package com.database;
 
 import com.mysql.fabric.jdbc.FabricMySQLDriver;
-import entities.Table;
+import com.entities.Table;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -20,10 +20,8 @@ public class TableRepo extends BaseRepo{
     }
 
     public void reserveTable(int tableId, int userId){
-        String insertTableReservation = "update tables set user_id = ? where table_id = ?";
-
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(insertTableReservation)) {
+             CallableStatement statement = connection.prepareCall("{CALL reserveTable(?,?)}")) {
 
             statement.setInt(1, userId);
             statement.setInt(2,  tableId);
@@ -37,13 +35,12 @@ public class TableRepo extends BaseRepo{
     }
 
     public List<Table> getAllTables(){
-        String allTables = "select * from tables";
         List<Table> allTablesList = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             Statement statement = connection.createStatement()) {
+             CallableStatement statement = connection.prepareCall("{CALL getAllTables()}")) {
 
-            ResultSet resultSet = statement.executeQuery(allTables);
+            ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()){
                 Table table = new Table();
@@ -60,34 +57,9 @@ public class TableRepo extends BaseRepo{
         return allTablesList;
     }
 
-    public List<Table> getUsersTables(int userId){
-        String getUsersOrders = "select * from tables where user_id = ?";
-        List<Table> result = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(getUsersOrders)) {
-
-            statement.setInt(1, userId);
-
-            ResultSet orderResultSet = statement.executeQuery();
-
-            while (orderResultSet.next()){
-                Table table = new Table();
-                table.setId(orderResultSet.getInt("table_id"));
-                table.setClientId(orderResultSet.getInt("user_id"));
-                result.add(table);
-            }
-            connection.close();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-
     public int getSumOfTableOrders(int tableId){
-        String getTableOrders = "select count(*) as sum from orders where table_id = ?";
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(getTableOrders)) {
+             CallableStatement statement = connection.prepareCall("{CALL getSumOfTableOrders(?)}")) {
 
             statement.setInt(1, tableId);
 
@@ -102,9 +74,8 @@ public class TableRepo extends BaseRepo{
     }
 
     public void setTableFree(int tableId){
-        String setFree = "update tables set user_id = null where table_id = ?";
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             PreparedStatement statement = connection.prepareStatement(setFree)) {
+             CallableStatement statement = connection.prepareCall("{CALL setTableFree(?)}")) {
 
             statement.setInt(1, tableId);
 

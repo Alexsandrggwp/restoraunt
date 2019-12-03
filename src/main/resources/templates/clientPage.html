@@ -56,5 +56,8 @@
         <span th:if="${table.getClientId()==0}">свободен</span>
     </div>
 </div>
+<form th:action="@{/logout}" method="post">
+    <input type="submit" value="Sign Out"/>
+</form>
 </body>
 </html>

@@ -1,13 +1,12 @@
-package main;
+package com.controllers;
 
-import database.DishOrderRepo;
-import database.OrderRepo;
-import database.TableRepo;
-import database.UserRepo;
-import entities.Dish;
-import entities.Order;
-import entities.Table;
-import entities.User;
+import com.database.DishOrderRepo;
+import com.database.OrderRepo;
+import com.database.TableRepo;
+import com.database.UserRepo;
+import com.entities.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +24,12 @@ public class EmployeeController {
     private UserRepo userRepo = new UserRepo();
 
     @GetMapping("/employee")
-    public String getTables(Model model){
+    public String getEmployeePage(@AuthenticationPrincipal User user, Model model){
+
+        if (user.getRole().equals(Role.client)) {
+            return "redirect:/client";
+        }
+
         List<Dish> allOrderedDishes = dishOrderRepo.getAllOrderedDishes();
         List<User> waitersList = userRepo.getAllWaiters();
 
@@ -57,7 +61,7 @@ public class EmployeeController {
 
     @PostMapping("/assignWaiter")
     public String setWaiter(@RequestParam int waiterId,@RequestParam int orderId){
-        userRepo.addWaiterToOrder(orderId, waiterId);
+        userRepo.addWaiterToOrder(waiterId, orderId);
         return "redirect:/employee";
     }
 

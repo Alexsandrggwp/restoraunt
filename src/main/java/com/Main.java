@@ -1,6 +1,4 @@
-package main;
-
-import database.DishOrderRepo;
+package com;
 
 public class Main {
     public static void main(String[] args) {

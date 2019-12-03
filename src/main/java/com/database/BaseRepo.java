@@ -1,4 +1,4 @@
-package database;
+package com.database;
 
 public abstract class BaseRepo {
 

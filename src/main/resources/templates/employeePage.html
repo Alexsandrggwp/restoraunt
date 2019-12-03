@@ -44,5 +44,8 @@
     <span th:text="${dish.name}"></span>
     <span th:text="${dish.cost} + 'руб'"></span>
 </div>
+<form th:action="@{/logout}" method="post">
+    <input type="submit" value="Sign Out"/>
+</form>
 </body>
 </html>
