@@ -106,7 +106,7 @@ public class DishOrderRepo extends BaseRepo{
 
     public int getSumOfOrderDishes(int orderId){
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             CallableStatement statement = connection.prepareCall("{CALL getSum(?)}")) {
+             CallableStatement statement = connection.prepareCall("{CALL getSumOfOrderDishes(?)}")) {
 
             statement.setInt(1, orderId);
 

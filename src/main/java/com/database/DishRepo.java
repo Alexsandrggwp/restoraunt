@@ -41,4 +41,20 @@ public class DishRepo extends BaseRepo{
         }
         return dishes;
     }
+
+    public void addDish(String dishName, int dishCost){
+        try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
+             CallableStatement statement = connection.prepareCall("{CALL addDish(?,?)}")) {
+
+            statement.setString(1, dishName);
+            statement.setInt(2, dishCost);
+
+            statement.executeUpdate();
+
+            connection.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

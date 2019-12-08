@@ -23,7 +23,6 @@ public class UserRepo extends BaseRepo implements UserDetailsService{
         }
     }
 
-
     public void addUser(String name, String surname, String login, String password, int role){
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
              CallableStatement statement = connection.prepareCall("{CALL addUser(?,?,?,?,?)}")) {
@@ -125,6 +124,44 @@ public class UserRepo extends BaseRepo implements UserDetailsService{
             e.printStackTrace();
         }
         return result;
+    }
+
+    public List<Role> getAllRoles(){
+        List<Role> result = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
+             CallableStatement statement = connection.prepareCall("{CALL getAllRoles()}")) {
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()){
+                result.add(Role.valueOf(resultSet.getString("role_name")));
+            }
+
+            connection.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public int convertRoleNameToId(String name){
+        try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
+             CallableStatement statement = connection.prepareCall("{CALL convertRoleNameToId(?)}")) {
+
+            statement.setString(1, name);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()){
+                return resultSet.getInt("role_id");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     @Override

@@ -14,7 +14,7 @@
 
 <div class="container mt-5">
     <div th:if="${message!=null}" th:text="${message}"></div>
-    <form th:action="@{/registration}" method="post">
+    <form th:action="@{/employeeRegistration}" method="post">
         <div class="form-group row">
             <label class="col-sm-1 col-form-label">Username:</label>
             <input type="text" class="form-control col-sm-2" name="username">
@@ -31,7 +31,16 @@
             <label class="col-sm-1 col-form-label">Password:</label>
             <input type="password" class="form-control col-sm-2" name="password">
         </div>
-            <input class="btn btn-primary" type="submit" value="зарегистрироваться">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text" for="role">Position:</label>
+            </div>
+            <select th:value="${roles}" name="role" id="role">
+                <option th:value="0">...</option>
+                <option th:each="role : ${roles}" th:value="${role.name()}" th:text="${role.name()}"></option>
+            </select>
+        </div>
+        <input class="btn btn-primary" type="submit" value="зарегистрироваться">
     </form>
 </div>
 <div class="container mt-5">

@@ -1,9 +1,6 @@
 package com.controllers;
 
-import com.database.DishOrderRepo;
-import com.database.OrderRepo;
-import com.database.TableRepo;
-import com.database.UserRepo;
+import com.database.*;
 import com.entities.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,6 +19,9 @@ public class EmployeeController {
     private OrderRepo orderRepo = new OrderRepo();
     private DishOrderRepo dishOrderRepo = new DishOrderRepo();
     private UserRepo userRepo = new UserRepo();
+    private DishRepo dishRepo = new DishRepo();
+
+    private String error;
 
     @GetMapping("/employee")
     public String getEmployeePage(@AuthenticationPrincipal User user, Model model){
@@ -56,11 +56,16 @@ public class EmployeeController {
         model.addAttribute("allTables", allTables);
         model.addAttribute("waitersList", waitersList);
         model.addAttribute("allOrderedDishes", allOrderedDishes);
+        model.addAttribute("error", error);
         return "employeePage";
     }
 
     @PostMapping("/assignWaiter")
     public String setWaiter(@RequestParam int waiterId,@RequestParam int orderId){
+        if (waiterId == 0){
+            error = "Вы не указали официанта!!!";
+            return "redirect:/employee";
+        }
         userRepo.addWaiterToOrder(waiterId, orderId);
         return "redirect:/employee";
     }
@@ -70,6 +75,16 @@ public class EmployeeController {
         dishOrderRepo.deleteAllDishesFromOrder(orderId);
         orderRepo.deleteOrder(orderId);
         tableRepo.setTableFree(tableId);
+        return "redirect:/employee";
+    }
+
+    @PostMapping("/addDish")
+    public String addDish(@RequestParam String dishName, @RequestParam int dishCost){
+        if (dishName.isEmpty() || dishCost == 0) {
+            error = "вы указали не все данные";
+            return "redirect:/employee";
+        }
+        dishRepo.addDish(dishName, dishCost);
         return "redirect:/employee";
     }
 }

@@ -24,7 +24,8 @@ public class ClientController {
     private DishRepo dishRepo = new DishRepo();
     private DishOrderRepo dishOrderRepo = new DishOrderRepo();
 
-    private String error;
+    private String error1;
+    private String error2;
 
     @GetMapping("/")
     public String redir(){
@@ -32,7 +33,8 @@ public class ClientController {
     }
 
     @GetMapping("/client")
-    public String getTables(@AuthenticationPrincipal User user, Model model){
+    public String getTables(@AuthenticationPrincipal User user,
+                            Model model){
         if(user.getRole().equals(Role.chef) || user.getRole().equals(Role.cooker) || user.getRole().equals(Role.waiter)) {
             return "redirect:/employee";
         }
@@ -42,41 +44,52 @@ public class ClientController {
         model.addAttribute("allTables", tables);
         model.addAttribute("dishesList", dishes);
         model.addAttribute("userOrders", orders);
-        model.addAttribute("error", error);
+        model.addAttribute("error1", error1);
+        model.addAttribute("error2", error2);
         return "clientPage";
     }
 
-    @PostMapping("/order")
-    public String makeOrder(@RequestParam int dishId, @RequestParam int tableId, @RequestParam int orderId, Model model){
-        error = null;
-        if(dishId == 0 || tableId == 0){
-            error = "введите все необходимые данные для заказа";
-            model.addAttribute("error", error);
+    @PostMapping("/newOrder")
+    public String makeNewOrder(@RequestParam int dishId,
+                               @RequestParam int tableId){
+        error1 = null;
+        if(tableId == 0){
+            error1 = "введите все необходимые данные";
             return "redirect:/client";
         } else {
-            if (orderId == 0) {
-                Random random = new Random();
-                int newOrderId = random.nextInt(100000000 + 1);
-                while (!orderRepo.isOrderPresent(newOrderId)) {
-                    newOrderId = random.nextInt(100000000 + 1);
-                }
-                orderRepo.reserveOrder(newOrderId, tableId, 1);
-                tableRepo.reserveTable(tableId, 1);
+            Random random = new Random();
+            int newOrderId = random.nextInt(100000000 + 1);
+            while (!orderRepo.isOrderPresent(newOrderId)) {
+                newOrderId = random.nextInt(100000000 + 1);
+            }
+            orderRepo.reserveOrder(newOrderId, tableId, 1);
+            tableRepo.reserveTable(tableId, 1);
+            if (dishId != 0) {
                 dishOrderRepo.addDishToOrder(newOrderId, dishId);
-            } else {
-                if (dishOrderRepo.isDishPresent(orderId, dishId)) {
-                    dishOrderRepo.increaseRepeats(orderId, dishId);
-                } else {
-                    dishOrderRepo.addDishToOrder(orderId, dishId);
-                }
             }
         }
-        model.addAttribute("error", error);
+        return "redirect:/client";
+    }
+
+    @PostMapping("/addToExistingOrder")
+    public String addToExistingOrder(@RequestParam int dishId,
+                                     @RequestParam int orderId){
+        error2 = null;
+        if(dishId == 0 || orderId == 0){
+            error2 = "введите все необходимые данные для заказа";
+            return "redirect:/client";
+        } else {
+            if (dishOrderRepo.isDishPresent(orderId, dishId)) {
+                dishOrderRepo.increaseRepeats(orderId, dishId);
+            } else {
+                dishOrderRepo.addDishToOrder(orderId, dishId); }
+        }
         return "redirect:/client";
     }
 
     @PostMapping("/deleteDish")
-    public String deleteDish(@RequestParam int dishId, @RequestParam int orderId){
+    public String deleteDish(@RequestParam int dishId,
+                             @RequestParam int orderId){
         if (dishOrderRepo.getRepeats(orderId, dishId) > 1){
             dishOrderRepo.decreaseRepeats(orderId, dishId);
         } else {
