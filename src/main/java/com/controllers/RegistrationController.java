@@ -1,5 +1,6 @@
 package com.controllers;
 
+import com.database.Logger;
 import com.database.UserRepo;
 import com.entities.Role;
 import com.entities.User;
@@ -44,6 +45,7 @@ public class RegistrationController {
             return "redirect:/registration";
         }
         userRepo.addUser(username, surname, login, password, 1);
+        Logger.LOGG("В системе был зарегестрирован новый клиент: " + username + surname);
         return "redirect:/login";
     }
 
@@ -76,6 +78,7 @@ public class RegistrationController {
         }
         int roleId = userRepo.convertRoleNameToId(role);
         userRepo.addUser(username, surname, login, password, roleId);
+        Logger.LOGG("В системе был зарегестрирован новый сотрудник: " + username + surname);
         return "redirect:/employee";
     }
 }

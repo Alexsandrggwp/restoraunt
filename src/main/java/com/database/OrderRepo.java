@@ -40,6 +40,22 @@ public class OrderRepo extends BaseRepo{
         }
     }
 
+    public void reserveImmediateOrder(int orderId, int tableId){
+        try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
+             CallableStatement statement = connection.prepareCall("{CALL reserveImmediateOrder(?,?)}")) {
+
+            statement.setInt(1, orderId);
+            statement.setInt(2, tableId);
+
+            statement.execute();
+
+            connection.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public List<Order> getUsersOrders(int userId){
         List<Order> result = new ArrayList<>();
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
@@ -56,7 +72,6 @@ public class OrderRepo extends BaseRepo{
                 waiter.setId(orderResultSet.getInt("waiter_id"));
                 client.setId(orderResultSet.getInt("client_id"));
                 order.setId(orderResultSet.getInt("order_id"));
-                order.setOrderAmount(orderResultSet.getInt("order_value"));
                 order.setTableId(orderResultSet.getInt("table_id"));
                 order.setClient(client);
                 order.setWaiter(waiter);
@@ -146,7 +161,7 @@ public class OrderRepo extends BaseRepo{
         List<Order> result = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
-             CallableStatement statement = connection.prepareCall("{CALL getAllTableOrders(?)}")) {
+             CallableStatement statement = connection.prepareCall("{CALL getAllActiveTableOrders(?)}")) {
 
             statement.setInt(1, tableId);
 
@@ -168,6 +183,36 @@ public class OrderRepo extends BaseRepo{
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return result;
+    }
+
+    public List<Order> getAllInactiveEmployeeOrders(int employeeId){
+        List<Order> result = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(URL, PASSWORD, LOGIN);
+             CallableStatement statement = connection.prepareCall("{CALL getAllInactiveEmployeeOrders(?)}")) {
+
+            statement.setInt(1, employeeId);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()){
+                Order order = new Order();
+                User client = new User();
+                User waiter = new User();
+                waiter.setId(resultSet.getInt("waiter_id"));
+                client.setId(resultSet.getInt("client_id"));
+                order.setId(resultSet.getInt("order_id"));
+                order.setTableId(resultSet.getInt("table_id"));
+                order.setClient(client);
+                order.setWaiter(waiter);
+                result.add(order);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        fillUpOrders(result);
         return result;
     }
 }

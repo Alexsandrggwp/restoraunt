@@ -187,7 +187,9 @@ public class DishOrderRepo extends BaseRepo{
                 dish.setId(resultSet.getInt("dish_id"));
                 dish.setName(resultSet.getString("dish_name"));
                 dish.setCost(resultSet.getInt("dish_cost"));
-                result.add(dish);
+                for (int i = 0; i < resultSet.getInt("repeats"); i++) {
+                    result.add(dish);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
